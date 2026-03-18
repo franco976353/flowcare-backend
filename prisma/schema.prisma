@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                    String         @id @default(uuid())
+  email                 String         @unique
+  passwordHash          String
+  name                  String
+  ageBracket            String         // e.g. "20s", "30s", "40s", "50s+"
+  waterGoalMl           Int            @default(2000)
+  goesJustInCase        Boolean        @default(false)
+  currentIntervalMins   Int            @default(180) // 3 hours default
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  logs                  Log[]
+  notifications         Notification[]
+}
+
+model Log {
+  id                    String         @id @default(uuid())
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id])
+  type                  String         // "BATHROOM", "WATER", "LEAK"
+  amountMl              Int?           // Only for "WATER" type
+  timestamp             DateTime       @default(now())
+  wasUrgent             Boolean        @default(false)
+  leakOccurred          Boolean        @default(false)
+}
+
+model Notification {
+  id                    String         @id @default(uuid())
+  userId                String
+  user                  User           @relation(fields: [userId], references: [id])
+  scheduledTime         DateTime
+  status                String         // "PENDING", "SENT", "CANCELLED"
+  createdAt             DateTime       @default(now())
+}
